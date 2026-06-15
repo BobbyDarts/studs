@@ -7,7 +7,7 @@ A room-first floorplan design tool for single-family homes. Instead of drawing w
 ## Features
 
 - **Room-first design** — add rooms by name and dimensions; no wall drawing required
-- **Dynamic grid canvas** — 1 cell = 1 ft (imperial) or 0.5 m (metric), with major/minor grid lines; grid size expands/contracts with zoom level
+- **Dynamic grid canvas** — 1 cell = 1 ft (30.48 cm), with major/minor grid lines; grid size expands/contracts with zoom level
 - **Pan + zoom** — mouse wheel zoom with zoom-to-cursor, middle mouse / space+drag to pan, zoom level persisted per project
 - **Fit to screen** — automatically zoom and scroll to fit all rooms in view (`f`)
 - **Center on grid** — reposition all rooms to the center of the grid (`c`)
