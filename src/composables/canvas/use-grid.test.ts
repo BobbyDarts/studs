@@ -1,52 +1,30 @@
 // /src/composables/canvas/use-grid.test.ts
 
 import { describe, it, expect } from "vitest";
-import { ref } from "vue";
-
-import type { UnitSystem } from "@/types/units";
 
 import { useGrid } from "./use-grid";
 
-function makeGrid(units: UnitSystem = "imperial") {
-  return useGrid(ref(units));
+function makeGrid() {
+  return useGrid();
 }
 
 describe("useGrid", () => {
   describe("cmPerCell", () => {
-    it("is 30.48 for imperial", () => {
-      const grid = makeGrid("imperial");
-      expect(grid.cmPerCell.value).toBeCloseTo(30.48);
-    });
-
-    it("is 50 for metric", () => {
-      const grid = makeGrid("metric");
-      expect(grid.cmPerCell.value).toBe(50);
-    });
-
-    it("updates reactively when units change", () => {
-      const units = ref<UnitSystem>("imperial");
-      const grid = useGrid(units);
-      expect(grid.cmPerCell.value).toBeCloseTo(30.48);
-      units.value = "metric";
-      expect(grid.cmPerCell.value).toBe(50);
+    it("is always 30.48 regardless of units", () => {
+      const grid = useGrid();
+      expect(grid.cmPerCell).toBeCloseTo(30.48);
     });
   });
 
   describe("cmToCells / cellsToCm", () => {
-    it("converts cm to cells in imperial", () => {
-      const grid = makeGrid("imperial");
+    it("converts cm to cells consistently regardless of units", () => {
+      const grid = useGrid();
       expect(grid.cmToCells(30.48)).toBeCloseTo(1);
       expect(grid.cmToCells(304.8)).toBeCloseTo(10);
     });
 
-    it("converts cm to cells in metric", () => {
-      const grid = makeGrid("metric");
-      expect(grid.cmToCells(50)).toBeCloseTo(1);
-      expect(grid.cmToCells(500)).toBeCloseTo(10);
-    });
-
     it("round-trips cellsToCm", () => {
-      const grid = makeGrid("imperial");
+      const grid = makeGrid();
       expect(grid.cellsToCm(grid.cmToCells(304.8))).toBeCloseTo(304.8);
     });
   });
@@ -106,7 +84,7 @@ describe("useGrid", () => {
 
   describe("roomToRect", () => {
     it("converts a room to a grid rect in imperial", () => {
-      const grid = makeGrid("imperial");
+      const grid = makeGrid();
       const rect = grid.roomToRect({
         x: 2,
         y: 3,
@@ -116,9 +94,14 @@ describe("useGrid", () => {
       expect(rect).toEqual({ x: 2, y: 3, width: 10, height: 20 });
     });
 
-    it("converts a room to a grid rect in metric", () => {
-      const grid = makeGrid("metric");
-      const rect = grid.roomToRect({ x: 0, y: 0, widthCm: 500, depthCm: 250 });
+    it("converts a room to a grid rect", () => {
+      const grid = useGrid();
+      const rect = grid.roomToRect({
+        x: 0,
+        y: 0,
+        widthCm: 304.8,
+        depthCm: 152.4,
+      });
       expect(rect).toEqual({ x: 0, y: 0, width: 10, height: 5 });
     });
   });

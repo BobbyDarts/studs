@@ -1,15 +1,13 @@
 // /src/composables/canvas/use-dead-space.test.ts
 
 import { describe, it, expect } from "vitest";
-import { ref } from "vue";
 
 import { useDeadSpace } from "./use-dead-space";
 import { useGrid } from "./use-grid";
 import { useRooms } from "./use-rooms";
 
 function makeDeadSpace() {
-  const units = ref<"imperial" | "metric">("imperial");
-  const grid = useGrid(units);
+  const grid = useGrid();
   const rooms = useRooms(grid);
   const deadSpace = useDeadSpace(grid, rooms);
   return { grid, rooms, deadSpace };
@@ -128,7 +126,7 @@ describe("useDeadSpace", () => {
       const b = rooms.addRoom(ROOM_10x10);
       rooms.updateRoom(b.id, { x: 20, y: 0 });
       const cellCount = deadSpace.boundingBoxCells.value.length;
-      const expected = cellCount * Math.pow(grid.cmPerCell.value, 2);
+      const expected = cellCount * Math.pow(grid.cmPerCell, 2);
       expect(deadSpace.boundingBoxAreaCm.value).toBeCloseTo(expected);
     });
   });

@@ -123,11 +123,11 @@ export function useDeadSpace(
   });
 
   const enclosedAreaCm = computed(
-    () => enclosedCells.value.length * Math.pow(grid.cmPerCell.value, 2),
+    () => enclosedCells.value.length * Math.pow(grid.cmPerCell, 2),
   );
 
   const boundingBoxAreaCm = computed(
-    () => boundingBoxCells.value.length * Math.pow(grid.cmPerCell.value, 2),
+    () => boundingBoxCells.value.length * Math.pow(grid.cmPerCell, 2),
   );
 
   return {

@@ -64,7 +64,7 @@ export function useProject() {
   const createdAt = ref("");
 
   // --- Wire up composables ---
-  const grid = useGrid(units);
+  const grid = useGrid();
   const roomsComposable = useRooms(grid);
   const fixtures = useFixtures();
   const deadSpace = useDeadSpace(grid, roomsComposable);

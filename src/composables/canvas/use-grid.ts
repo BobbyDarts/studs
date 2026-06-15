@@ -2,7 +2,6 @@
 
 import { computed, ref } from "vue";
 
-import type { UnitSystem } from "@/types/units";
 import { snapToGrid, type Rect } from "@/utils/geometry";
 
 const DEFAULT_CELL_SIZE = 40;
@@ -21,7 +20,7 @@ export interface PixelCoord {
   y: number;
 }
 
-export function useGrid(units: { value: UnitSystem }) {
+export function useGrid() {
   const cellSizePx = ref(DEFAULT_CELL_SIZE);
   const TARGET_CANVAS_PX = 4000;
 
@@ -39,16 +38,16 @@ export function useGrid(units: { value: UnitSystem }) {
 
   /**
    * How many grid cells does a cm value span?
-   * 1 cell = 1 ft (imperial) or 0.5 m (metric)
+   * 1 cell = 1 ft (30.48 cm)
    */
-  const cmPerCell = computed(() => (units.value === "imperial" ? 30.48 : 50));
+  const cmPerCell = 30.48;
 
   function cmToCells(cm: number): number {
-    return cm / cmPerCell.value;
+    return cm / cmPerCell;
   }
 
   function cellsToCm(cells: number): number {
-    return cells * cmPerCell.value;
+    return cells * cmPerCell;
   }
 
   // --- Coordinate conversion ---
