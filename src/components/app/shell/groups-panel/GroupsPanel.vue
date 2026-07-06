@@ -12,7 +12,7 @@ import { useTheme } from "@/composables/ui";
 import { useProjectStore } from "@/stores/project";
 import { groupIndexToColor, groupIndexToColorDark } from "@/utils/group-colors";
 
-const mainRef = defineProps<{
+const props = defineProps<{
   mainRef?: HTMLElement | null;
 }>();
 
@@ -34,7 +34,7 @@ function onPanelPointerDown(e: PointerEvent) {
   if ((e.target as HTMLElement).closest("button")) return;
   isDragging.value = true;
 
-  const bounds = mainRef.mainRef?.getBoundingClientRect();
+  const bounds = props.mainRef?.getBoundingClientRect();
   const ox = bounds?.left ?? 0;
   const oy = bounds?.top ?? 0;
 
@@ -44,7 +44,7 @@ function onPanelPointerDown(e: PointerEvent) {
   };
 
   function onMove(e: PointerEvent) {
-    const bounds = mainRef.mainRef?.getBoundingClientRect();
+    const bounds = props.mainRef?.getBoundingClientRect();
     const maxX = bounds ? bounds.width - 198 : window.innerWidth - 198;
     const maxY = bounds ? bounds.height - 48 : window.innerHeight - 48;
     const ox = bounds?.left ?? 0;
@@ -66,7 +66,7 @@ function onPanelPointerDown(e: PointerEvent) {
 }
 
 useResizeObserver(
-  computed(() => mainRef.mainRef ?? null),
+  computed(() => props.mainRef ?? null),
   (entries) => {
     const width = entries[0]?.contentRect.width ?? 0;
     const height = entries[0]?.contentRect.height ?? 0;
