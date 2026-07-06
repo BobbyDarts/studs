@@ -1,14 +1,5 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["eslint", "typescript", "unicorn", "oxc", "vue", "vitest"],
-  "env": {
-    "browser": true
-  },
-  "categories": {
-    "correctness": "error"
-  },
-  "ignorePatterns": ["src/components/ui/**"],
-  "rules": {
-    "vitest/require-mock-type-parameters": "off"
-  }
+  "extends": ["./node_modules/@midden/oxlint-config/index.json"],
+  "ignorePatterns": ["src/components/ui/**"]
 }
