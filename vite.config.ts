@@ -5,6 +5,8 @@ import { fileURLToPath, URL } from "node:url";
 import { defineConfig } from "vite";
 import vueDevTools from "vite-plugin-vue-devtools";
 
+import { version } from "./package.json";
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), vueJsx(), vueDevTools(), tailwindcss()],
@@ -12,5 +14,12 @@ export default defineConfig({
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
     },
+  },
+  server: {
+    host: true,
+    port: 5174,
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(version),
   },
 });

@@ -42,6 +42,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { EnvironmentBadge } from "@/components/app/shell/environment-badge";
 import { useSelection } from "@/composables/canvas";
 import { useConfirmDialog, useGroupDialog } from "@/composables/ui";
 import { cn } from "@/lib/utils";
@@ -75,7 +76,8 @@ const isDragging = ref(false);
 let dragOffset = { x: 0, y: 0 };
 
 function onToolbarPointerDown(e: PointerEvent) {
-  if ((e.target as HTMLElement).closest("button")) return;
+  if ((e.target as HTMLElement).closest("button, [data-toolbar-ignore]"))
+    return;
   isDragging.value = true;
 
   const bounds = props.mainRef?.getBoundingClientRect();
@@ -358,286 +360,294 @@ useResizeObserver(
   <TooltipProvider>
     <div
       ref="toolbarRef"
-      :class="
-        cn(
-          // positioning
-          'absolute z-40',
-
-          // layout
-          'flex items-center gap-1 px-2 py-1.5',
-
-          // appearance
-          'rounded-lg border',
-          'bg-surface-floating/90 backdrop-blur-sm border-surface-floating-border shadow-floating',
-
-          // behavior
-          'select-none',
-          isDragging ? 'cursor-grabbing' : 'cursor-grab',
-        )
-      "
+      class="absolute z-40"
       :style="toolbarStyle"
       @pointerdown="onToolbarPointerDown"
     >
-      <!-- Drag handle -->
-      <GripVertical class="size-4 text-muted-foreground shrink-0 mr-0.5" />
+      <div
+        :class="
+          cn(
+            // layout
+            'flex items-center gap-1 px-2 py-1.5',
 
-      <div class="w-px h-5 bg-border mx-0.5" />
+            // appearance
+            'rounded-lg border',
+            'bg-surface-floating/90 backdrop-blur-sm border-surface-floating-border shadow-floating',
 
-      <!-- Undo / Redo -->
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            size="sm"
-            variant="ghost"
-            class="h-8 w-8 p-0"
-            :disabled="!store.canUndo"
-            @click="store.undo()"
-          >
-            <Undo2 class="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
-      </Tooltip>
+            // behavior
+            'select-none',
+            isDragging ? 'cursor-grabbing' : 'cursor-grab',
+          )
+        "
+      >
+        <!-- Drag handle -->
+        <GripVertical class="size-4 text-muted-foreground shrink-0 mr-0.5" />
 
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            size="sm"
-            variant="ghost"
-            class="h-8 w-8 p-0"
-            :disabled="!store.canRedo"
-            @click="store.redo()"
-          >
-            <Redo2 class="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
-      </Tooltip>
+        <div class="w-px h-5 bg-border mx-0.5" />
 
-      <div class="w-px h-5 bg-border mx-0.5" />
-
-      <!-- Zoom group -->
-      <div class="relative">
+        <!-- Undo / Redo -->
         <Tooltip>
           <TooltipTrigger as-child>
             <Button
               size="sm"
               variant="ghost"
               class="h-8 w-8 p-0"
-              :class="activePopover === 'zoom' ? 'bg-muted' : ''"
-              @click="togglePopover('zoom')"
+              :disabled="!store.canUndo"
+              @click="store.undo()"
             >
-              <ZoomIn class="size-4" />
+              <Undo2 class="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Zoom</TooltipContent>
+          <TooltipContent>Undo (Ctrl+Z)</TooltipContent>
         </Tooltip>
 
-        <div v-if="activePopover === 'zoom'" :class="popoverClass">
-          <button :class="itemClass(true)" @click="store.grid.zoom(1)">
-            <ZoomIn class="size-3.5 text-muted-foreground" />
-            Zoom in
-            <span class="ml-auto text-xs text-muted-foreground">+</span>
-          </button>
-          <button :class="itemClass(true)" @click="store.grid.zoom(-1)">
-            <ZoomOut class="size-3.5 text-muted-foreground" />
-            Zoom out
-            <span class="ml-auto text-xs text-muted-foreground">-</span>
-          </button>
-          <button :class="itemClass(true)" @click="onResetZoom">
-            <Maximize2 class="size-3.5 text-muted-foreground" />
-            Reset zoom
-            <span class="ml-auto text-xs text-muted-foreground">0</span>
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button :class="itemClass(true)" @click="onFitToScreen">
-            <Expand class="size-3.5 text-muted-foreground" />
-            Fit to screen
-            <span class="ml-auto text-xs text-muted-foreground">F</span>
-          </button>
-          <button :class="itemClass(true)" @click="onCenterOnGrid">
-            <Crosshair class="size-3.5 text-muted-foreground" />
-            Center on grid
-            <span class="ml-auto text-xs text-muted-foreground">C</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Room group -->
-      <div class="relative">
         <Tooltip>
           <TooltipTrigger as-child>
             <Button
               size="sm"
               variant="ghost"
               class="h-8 w-8 p-0"
-              :class="activePopover === 'room' ? 'bg-muted' : ''"
-              @click="togglePopover('room')"
+              :disabled="!store.canRedo"
+              @click="store.redo()"
             >
-              <Square class="size-4" />
+              <Redo2 class="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Rooms</TooltipContent>
+          <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
         </Tooltip>
 
-        <div v-if="activePopover === 'room'" :class="popoverClass">
-          <button :class="itemClass(true)" @click="onAddRoom">
-            <PlusSquare class="size-3.5 text-muted-foreground" />
-            Add room
-            <span class="ml-auto text-xs text-muted-foreground">R</span>
-          </button>
-          <button
-            :class="itemClass(selection.canEdit.value)"
-            @click="onCopyRoom"
-          >
-            <Copy class="size-3.5 text-muted-foreground" />
-            Copy room
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canEdit.value)"
-            @click="onEditRoom"
-          >
-            <Pencil class="size-3.5 text-muted-foreground" />
-            Edit room
-          </button>
-          <button
-            :class="itemClass(selection.canDelete.value)"
-            @click="onDeleteRoom"
-          >
-            <Trash2 class="size-3.5 text-muted-foreground" />
-            Delete room
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canAddFixture.value)"
-            @click="onAddFixture"
-          >
-            <Wrench class="size-3.5 text-muted-foreground" />
-            Add fixture
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canMirrorRoom.value)"
-            @click="onMirrorRoomH"
-          >
-            <FlipHorizontal class="size-3.5 text-muted-foreground" />
-            Mirror horizontal
-          </button>
-          <button
-            :class="itemClass(selection.canMirrorRoom.value)"
-            @click="onMirrorRoomV"
-          >
-            <FlipVertical class="size-3.5 text-muted-foreground" />
-            Mirror vertical
-          </button>
-        </div>
-      </div>
+        <div class="w-px h-5 bg-border mx-0.5" />
 
-      <!-- Group group -->
-      <div class="relative">
+        <!-- Zoom group -->
+        <div class="relative">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                size="sm"
+                variant="ghost"
+                class="h-8 w-8 p-0"
+                :class="activePopover === 'zoom' ? 'bg-muted' : ''"
+                @click="togglePopover('zoom')"
+              >
+                <ZoomIn class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Zoom</TooltipContent>
+          </Tooltip>
+
+          <div v-if="activePopover === 'zoom'" :class="popoverClass">
+            <button :class="itemClass(true)" @click="store.grid.zoom(1)">
+              <ZoomIn class="size-3.5 text-muted-foreground" />
+              Zoom in
+              <span class="ml-auto text-xs text-muted-foreground">+</span>
+            </button>
+            <button :class="itemClass(true)" @click="store.grid.zoom(-1)">
+              <ZoomOut class="size-3.5 text-muted-foreground" />
+              Zoom out
+              <span class="ml-auto text-xs text-muted-foreground">-</span>
+            </button>
+            <button :class="itemClass(true)" @click="onResetZoom">
+              <Maximize2 class="size-3.5 text-muted-foreground" />
+              Reset zoom
+              <span class="ml-auto text-xs text-muted-foreground">0</span>
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button :class="itemClass(true)" @click="onFitToScreen">
+              <Expand class="size-3.5 text-muted-foreground" />
+              Fit to screen
+              <span class="ml-auto text-xs text-muted-foreground">F</span>
+            </button>
+            <button :class="itemClass(true)" @click="onCenterOnGrid">
+              <Crosshair class="size-3.5 text-muted-foreground" />
+              Center on grid
+              <span class="ml-auto text-xs text-muted-foreground">C</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Room group -->
+        <div class="relative">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                size="sm"
+                variant="ghost"
+                class="h-8 w-8 p-0"
+                :class="activePopover === 'room' ? 'bg-muted' : ''"
+                @click="togglePopover('room')"
+              >
+                <Square class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Rooms</TooltipContent>
+          </Tooltip>
+
+          <div v-if="activePopover === 'room'" :class="popoverClass">
+            <button :class="itemClass(true)" @click="onAddRoom">
+              <PlusSquare class="size-3.5 text-muted-foreground" />
+              Add room
+              <span class="ml-auto text-xs text-muted-foreground">R</span>
+            </button>
+            <button
+              :class="itemClass(selection.canEdit.value)"
+              @click="onCopyRoom"
+            >
+              <Copy class="size-3.5 text-muted-foreground" />
+              Copy room
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canEdit.value)"
+              @click="onEditRoom"
+            >
+              <Pencil class="size-3.5 text-muted-foreground" />
+              Edit room
+            </button>
+            <button
+              :class="itemClass(selection.canDelete.value)"
+              @click="onDeleteRoom"
+            >
+              <Trash2 class="size-3.5 text-muted-foreground" />
+              Delete room
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canAddFixture.value)"
+              @click="onAddFixture"
+            >
+              <Wrench class="size-3.5 text-muted-foreground" />
+              Add fixture
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canMirrorRoom.value)"
+              @click="onMirrorRoomH"
+            >
+              <FlipHorizontal class="size-3.5 text-muted-foreground" />
+              Mirror horizontal
+            </button>
+            <button
+              :class="itemClass(selection.canMirrorRoom.value)"
+              @click="onMirrorRoomV"
+            >
+              <FlipVertical class="size-3.5 text-muted-foreground" />
+              Mirror vertical
+            </button>
+          </div>
+        </div>
+
+        <!-- Group group -->
+        <div class="relative">
+          <Tooltip>
+            <TooltipTrigger as-child>
+              <Button
+                size="sm"
+                variant="ghost"
+                class="h-8 w-8 p-0"
+                :class="activePopover === 'group' ? 'bg-muted' : ''"
+                @click="togglePopover('group')"
+              >
+                <Group class="size-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Groups</TooltipContent>
+          </Tooltip>
+
+          <div v-if="activePopover === 'group'" :class="popoverClass">
+            <button
+              :class="itemClass(selection.canCreateGroup.value)"
+              @click="onCreateGroup"
+            >
+              <FolderPlus class="size-3.5 text-muted-foreground" />
+              Create group
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canRenameGroup.value)"
+              @click="onRenameGroup"
+            >
+              <Pencil class="size-3.5 text-muted-foreground" />
+              Rename group
+            </button>
+            <button
+              :class="itemClass(selection.canRemoveFromGroup.value)"
+              @click="onRemoveFromGroup"
+            >
+              <LogOut class="size-3.5 text-muted-foreground" />
+              Remove from group
+            </button>
+            <button
+              :class="itemClass(selection.canDeleteGroup.value)"
+              @click="onDeleteGroup"
+            >
+              <FolderMinus class="size-3.5 text-muted-foreground" />
+              Delete group
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canCopyGroup.value)"
+              @click="onCopyGroup"
+            >
+              <Copy class="size-3.5 text-muted-foreground" />
+              Copy group
+            </button>
+            <button
+              :class="itemClass(selection.canRotateGroup.value)"
+              @click="onRotateGroup"
+            >
+              <RotateCw class="size-3.5 text-muted-foreground" />
+              Rotate group
+            </button>
+            <button
+              :class="itemClass(selection.canMirrorGroup.value)"
+              @click="onMirrorGroupH"
+            >
+              <FlipHorizontal class="size-3.5 text-muted-foreground" />
+              Mirror horizontal
+            </button>
+            <button
+              :class="itemClass(selection.canMirrorGroup.value)"
+              @click="onMirrorGroupV"
+            >
+              <FlipVertical class="size-3.5 text-muted-foreground" />
+              Mirror vertical
+            </button>
+            <div class="h-px bg-border my-0.5" />
+            <button
+              :class="itemClass(selection.canMergeGroups.value)"
+              @click="onMergeGroups"
+            >
+              <Combine class="size-3.5 text-muted-foreground" />
+              Merge groups
+            </button>
+          </div>
+        </div>
+
+        <!-- Groups panel -->
+        <div class="w-px h-5 bg-border mx-0.5" />
+
         <Tooltip>
           <TooltipTrigger as-child>
             <Button
               size="sm"
               variant="ghost"
               class="h-8 w-8 p-0"
-              :class="activePopover === 'group' ? 'bg-muted' : ''"
-              @click="togglePopover('group')"
+              :class="groupsPanelVisible ? 'bg-muted' : ''"
+              @click="groupsPanelVisible = !groupsPanelVisible"
             >
-              <Group class="size-4" />
+              <LayoutList class="size-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent>Groups</TooltipContent>
+          <TooltipContent>Groups panel (G)</TooltipContent>
         </Tooltip>
-
-        <div v-if="activePopover === 'group'" :class="popoverClass">
-          <button
-            :class="itemClass(selection.canCreateGroup.value)"
-            @click="onCreateGroup"
-          >
-            <FolderPlus class="size-3.5 text-muted-foreground" />
-            Create group
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canRenameGroup.value)"
-            @click="onRenameGroup"
-          >
-            <Pencil class="size-3.5 text-muted-foreground" />
-            Rename group
-          </button>
-          <button
-            :class="itemClass(selection.canRemoveFromGroup.value)"
-            @click="onRemoveFromGroup"
-          >
-            <LogOut class="size-3.5 text-muted-foreground" />
-            Remove from group
-          </button>
-          <button
-            :class="itemClass(selection.canDeleteGroup.value)"
-            @click="onDeleteGroup"
-          >
-            <FolderMinus class="size-3.5 text-muted-foreground" />
-            Delete group
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canCopyGroup.value)"
-            @click="onCopyGroup"
-          >
-            <Copy class="size-3.5 text-muted-foreground" />
-            Copy group
-          </button>
-          <button
-            :class="itemClass(selection.canRotateGroup.value)"
-            @click="onRotateGroup"
-          >
-            <RotateCw class="size-3.5 text-muted-foreground" />
-            Rotate group
-          </button>
-          <button
-            :class="itemClass(selection.canMirrorGroup.value)"
-            @click="onMirrorGroupH"
-          >
-            <FlipHorizontal class="size-3.5 text-muted-foreground" />
-            Mirror horizontal
-          </button>
-          <button
-            :class="itemClass(selection.canMirrorGroup.value)"
-            @click="onMirrorGroupV"
-          >
-            <FlipVertical class="size-3.5 text-muted-foreground" />
-            Mirror vertical
-          </button>
-          <div class="h-px bg-border my-0.5" />
-          <button
-            :class="itemClass(selection.canMergeGroups.value)"
-            @click="onMergeGroups"
-          >
-            <Combine class="size-3.5 text-muted-foreground" />
-            Merge groups
-          </button>
-        </div>
       </div>
-
-      <!-- Groups panel -->
-      <div class="w-px h-5 bg-border mx-0.5" />
-
-      <Tooltip>
-        <TooltipTrigger as-child>
-          <Button
-            size="sm"
-            variant="ghost"
-            class="h-8 w-8 p-0"
-            :class="groupsPanelVisible ? 'bg-muted' : ''"
-            @click="groupsPanelVisible = !groupsPanelVisible"
-          >
-            <LayoutList class="size-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Groups panel (G)</TooltipContent>
-      </Tooltip>
+      <!-- Environment -->
+      <div
+        class="absolute right-0 top-full translate-y-1 z-10"
+        data-toolbar-ignore
+      >
+        <EnvironmentBadge />
+      </div>
     </div>
   </TooltipProvider>
 </template>
